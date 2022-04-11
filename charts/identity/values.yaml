@@ -1,0 +1,244 @@
+global:
+  chartName: identity
+
+  app:
+    metadata:
+      tier: identity
+    image:
+      tag: IDENTITY-1.6.0.2-latest
+
+  database:
+    enabled: true
+    type: mysql
+    existingSecret: backbase-env-mysql
+    checkEnabled: true
+
+  service:
+    enabled: true
+
+  jwt:
+    enabled: true
+    existingSecret: "backbase-env-jwt"
+    SIG_SECRET_KEY_fromSecret: true
+    USERCTX_KEY_fromSecret: true
+
+backbaseidentity:
+  enabled: true
+
+  app:
+    name: backbaseidentity
+    image:
+      repository: backbase-identity
+
+  registry:
+    enabled: false
+    checkEnabled: false
+
+  jwt:
+    enabled: false
+
+  database:
+    sid: backbase_identity
+
+  databaseEnvVarsMap:
+    URL: "QUARKUS_DATASOURCE_URL"
+    USERNAME: "QUARKUS_DATASOURCE_USERNAME"
+    PASSWORD: "QUARKUS_DATASOURCE_PASSWORD"
+    DRIVER_CLASS_NAME: "QUARKUS_DATASOURCE_DRIVER"
+
+  env:
+    QUARKUS_LOG_FILE_ENABLE: "false"
+    QUARKUS_LOG_LEVEL: "INFO"
+    KEYCLOAK_CONNECTIONSJPA_QUARKUS_INITIALIZEEMPTY: "true"
+    KEYCLOAK_CONNECTIONSJPA_QUARKUS_MIGRATIONSTRATEGY: "update"
+    KEYCLOAK_BACKBASE_DEVICE_URL: "http://device-management-service:8080"
+    KEYCLOAK_BACKBASE_FIDO_URL: "http://fido-service:8080"
+    KEYCLOAK_BACKBASE_OIDC_TOKEN_CONVERTER_URL: "http://token-converter:8080"
+    KEYCLOAK_BACKBASE_CONFIRMATION_URL: "http://confirmation:8080"
+    QUARKUS_HTTP_CORS_EXPOSED_HEADERS: "Location"
+    QUARKUS_HTTP_CORS: "true"
+
+  livenessProbe:
+    enabled: true
+    path: /auth/health/live
+
+  readinessProbe:
+    enabled: true
+    path: /auth/health/ready
+
+identityintegrationservice:
+  enabled: true
+
+  app:
+    name: identityintegrationservice
+    image:
+      repository: identity-integration-service
+
+  env:
+    IDENTITY_SERVERURL: "http://{{.Release.Name}}-backbaseidentity:8080/auth"
+
+  activemq:
+    enabled: true
+    checkEnabled: true
+
+  database:
+    enabled: false
+    checkEnabled: false
+
+  service:
+    enabled: true
+    nameOverride: identity-integration-service
+
+oidctokenconverter:
+  enabled: true
+
+  app:
+    name: oidctokenconverter
+    image:
+      repository: oidc-token-converter-service
+
+  service:
+    enabled: true
+    nameOverride: token-converter
+
+  env:
+    SSO_JWT_EXTERNAL_EXPIRATION: "600"
+    SSO_JWT_EXTERNAL_NOT_VALID_AFTER: "30000"
+    SSO_JWT_EXTERNAL_RENEW: "300"
+
+  database:
+    enabled: false
+    checkEnabled: false
+
+communicationsoutboundintegrationmock:
+  enabled: true
+
+  app:
+    name: communicationsoutboundintegrationmock
+    image:
+      repository: communications-outbound-integration-mock
+
+  service:
+    enabled: true
+    nameOverride: communications-outbound-integration-mock
+
+fidoservice:
+  enabled: true
+
+  app:
+    name: fidoservice
+    resources:
+      memory:
+        ram: 1024
+    image:
+      repository: fido-service
+  service:
+    enabled: true
+    nameOverride: fido-service
+  database:
+    sid: fido
+
+  env:
+    BUILDINGBLOCKS_SECURITY_CSRF_ENABLED: "false"
+    SPRING_LIQUIBASE_ENABLED: "true"
+    SPRING_DATASOURCE_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_MAXACTIVE: "30"
+
+devicemanagementservice:
+  enabled: true
+
+  app:
+    name: devicemanagementservice
+    resources:
+      memory:
+        ram: 1024
+    image:
+      repository: device-management-service
+  service:
+    enabled: true
+    nameOverride: device-management-service
+  database:
+    sid: device_management
+
+  env:
+    BUILDINGBLOCKS_SECURITY_CSRF_ENABLED: "false"
+    SPRING_LIQUIBASE_ENABLED: "true"
+    SPRING_DATASOURCE_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_MAXACTIVE: "30"
+
+  activemq:
+    enabled: true
+    checkEnabled: true
+
+confirmation:
+  enabled: true
+
+  app:
+    name: confirmation
+    resources:
+      memory:
+        ram: 1024
+    image:
+      repository: confirmation
+  service:
+    enabled: true
+    nameOverride: confirmation
+  database:
+    sid: confirmation
+
+  env:
+    BACKBASE_OIDC_TOKEN_CONVERTER_URL: "http://token-converter:8080"
+    BACKBASE_OIDC_TOKEN_CONVERTER_CLIENT_ID: "bb-client"
+    BACKBASE_OIDC_TOKEN_CONVERTER_CLIENT_SECRET: "bb-secret"
+    BACKBASE_OIDC_TOKEN_CONVERTER_GRANT_TYPE: "client_credentials"
+    SPRING_LIQUIBASE_ENABLED: "true"
+    SPRING_DATASOURCE_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_MAXACTIVE: "30"
+    BUILDINGBLOCKS_SECURITY_CSRF_ENABLED: "false"
+
+  activemq:
+    enabled: true
+    checkEnabled: true
+
+transactionsigningmock:
+  enabled: true
+
+  app:
+    name: transactionsigningmock
+    resources:
+      memory:
+        ram: 1024
+    image:
+      repository: transaction-signing-mock
+  service:
+    enabled: true
+    nameOverride: transaction-signing-mock
+  database:
+    sid: transaction_mock
+
+  env:
+    SPRING_LIQUIBASE_ENABLED: "true"
+    SPRING_DATASOURCE_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_VALIDATIONQUERY: "SELECT 1"
+    SPRING_DATASOURCE_TOMCAT_MAXACTIVE: "30"
+    BUILDINGBLOCKS_SECURITY_CSRF_ENABLED: "false"
+
+hardtokenoutboundintegrationmock:
+  enabled: true
+
+  app:
+    name: hardtokenoutboundintegrationmock
+    image:
+      repository: hard-token-integration-outbound-mock
+  service:
+    enabled: true
+    nameOverride: hard-token-integration-outbound-mock
+  env:
+    BUILDINGBLOCKS_SECURITY_CSRF_ENABLED: "false"
+
+  activemq:
+    enabled: false
+    checkEnabled: false

@@ -1,0 +1,30 @@
+dependencies:
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.13.0
+digest: sha256:95d97be9ac1101fdb2ed94992027cdfa7e871d8ecfa75a1d61c1ab1d45d51b58
+generated: "2020-09-01T12:26:30.114506+02:00"

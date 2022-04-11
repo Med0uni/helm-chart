@@ -1,0 +1,32 @@
+{{- $service := mergeOverwrite (dict) (mergeOverwrite (dict) .Values.global.service) (mergeOverwrite (dict) .Values.service) -}}
+{{- if or $service.enabled .Values.ingress.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "backbase-app.service-name" . }}
+  labels:
+{{ include "backbase-app.labels" . | indent 4 }}
+spec:
+  type: {{ $service.type }}
+  ports:
+    - port: {{ $service.port }}
+      targetPort: {{ $service.targetPort }}
+      protocol: TCP
+      name: {{ $service.portName }}
+    {{- range $service.additionalPorts }}
+    - name: {{ .name }}
+      protocol: {{ .protocol | default "TCP" }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+    {{- end }}
+    {{- range .Values.additionalContainers }}
+    {{- if .service }}
+    - name: {{ .service.portName }}
+      protocol: {{ .protocol | default "TCP" }}
+      port: {{ .service.port }}
+      targetPort: {{ .service.targetPort }}
+    {{- end }}
+    {{- end }}
+  selector:
+{{ include "backbase-app.match-labels" . | indent 4 }}
+{{- end }}

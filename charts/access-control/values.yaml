@@ -1,0 +1,38 @@
+global:
+  chartName: access-control
+
+  app:
+    metadata:
+      tier: dbs
+      capability: access-control
+    image:
+      registry: repo.backbase.com/backbase-docker-releases
+      tag: DBS-2.20.0
+
+  jwt:
+    enabled: true
+    existingSecret: "backbase-env-jwt"
+    SIG_SECRET_KEY_fromSecret: true
+    USERCTX_KEY_fromSecret: true
+  activemq:
+    enabled: true
+  database:
+    enabled: true
+  registry:
+    enabled: false
+
+accesscontrol:
+  enabled: true
+  app:
+    name: accesscontrol
+    image:
+      repository: access-control
+    resources:
+      memory:
+        ram: 3072
+  service:
+    enabled: true
+    nameOverride: access-control
+  database:
+    enabled: true
+    sid: accesscontrol_pandp

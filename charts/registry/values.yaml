@@ -1,0 +1,71 @@
+# Global values. Local values have precedence and mergeOverwrite globals
+global:
+  # Reference to umbrella chart name
+  chartName: registry
+  # Used to specify data about application itself
+  app:
+    # key-value pairs used for additional "app.backbase.com/key: value" labels for deployments
+    metadata:
+      # Legacy packaged name of the service
+      tier: ips
+      # Capability name
+      capability: service-discovery
+    # Docker image reference for application container; of form `registry/repository:tag`
+    # ref: https://microsoft.github.io/AzureTipsAndTricks/blog/tip57.html#docker-registry-vs-docker-repository
+    image:
+      # Docker image registry
+      registry: ""
+      # Docker image repository
+      repository: registry
+      # Docker image tag
+      tag: ""
+  # Key-value pairs representing environment variables for application container
+  # ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  # it is possible to use templates as value here (will be evaluated using tpl function)
+  env:
+    # Set hostname for eureka
+    "eureka.instance.hostname": localhost
+  # JWT related environment variables for POD
+  jwt:
+    # Configure the environment variables related with the JWT token secrets
+    enabled: true
+    # Name of the external kubernetes secret containing the jwt values
+    existingSecret: backbase-env-jwt
+    # Set the variable SIG_SECRET_KEY with the value from existingSecret
+    SIG_SECRET_KEY_fromSecret: true
+  # Registry (Netflix Eureka) configurations
+  registry:
+    # If enabled - registry.envVarNameDefaultZone environment variable will be set for POD based on protocol/host/port/path values:
+    # protocol://host:port/path
+    enabled: false
+    # Set eureka.instance.preferIpAddress environment variable
+    preferIpAddress: false
+    # registry host
+    host: localhost
+    # if enabled - initContainer with registry check will be added to POD
+    checkEnabled: false
+# Registry service local values
+registry:
+  # Used to specify data about application itself
+  app:
+    # Application name, will be used as main container name in Pod
+    name: registry
+    # Default App/JVM resources.
+    # Kubernetes requests/limits will be calculated based on provided numbers
+    resources:
+      # Container memory resources
+      memory:
+        # Amount of container memory resource to request (in Mi unit)
+        ram: 600
+  # Kubernetes liveness Probe
+  livenessProbe:
+    # Enables the Kubernetes liveness Probe for the main container
+    enabled: true
+  # Kubernetes readiness Probe
+  readinessProbe:
+    # Enables the Kubernetes readiness Probe for the main container
+    enabled: true
+  # Kubernetes Service
+  service:
+    # Create a Kubernetes Service resource for this deployment
+    enabled: true

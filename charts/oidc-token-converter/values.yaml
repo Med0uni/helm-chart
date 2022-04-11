@@ -1,0 +1,61 @@
+# Global values.
+#
+# Some `global` values have `local` counterparts (defined below).
+# Local values have precedence and `mergeOverwrite` globals
+global:
+
+  # Used to specify data about the application itself.
+  app:
+    # -- key-value pairs used for additional `app.backbase.com/key: value` labels for deployments
+    metadata:
+      # tier: identity
+      tier: identity
+    # -- Docker image reference for application container; of form `registry/repository:tag`
+    image:
+      # -- Docker [registry](https://microsoft.github.io/AzureTipsAndTricks/blog/tip57.html#docker-registry-vs-docker-repository) (optional) name.
+      # `registry` and `repository` will be concatenated using `/` if `registry` is provided, otherwise `repository` will be used
+      registry: ""
+      # Docker image tag
+      tag: ""
+      # -- Docker [repository](https://microsoft.github.io/AzureTipsAndTricks/blog/tip57.html#docker-registry-vs-docker-repository) (mandatory) name.
+      # `registry` and `repository` will be concatenated using `/` if `registry` is provided, otherwise `repository` will be used
+      repository: oidc-token-converter-service
+
+
+  # Kubernetes Service
+  service:
+    # -- if enabled, will create a Kubernetes Service resource for this deployment
+    enabled: true
+
+  # -- Use this to map default bbclient environment variable names to alternatives.
+  # For example, this will set var name `keycloak.backbase.oidc-token-converter.client-id` instead of `backbase.communication.http.client-id`:
+  #   bbclientEnvVarsMap:
+  #     CLIENTID: "keycloak.backbase.oidc-token-converter.client-id"
+  bbclientEnvVarsMap:
+    # -- Client ID environment variable name
+    CLIENTID: "backbase.token-converter.client-id"
+    # -- Client secret environment variable name
+    CLIENTSECRET: "backbase.token-converter.secret"
+
+# oidc token converter values
+oidctokenconverter:
+  # -- if enabled, will create a deployment
+  enabled: true
+
+  # Used to specify data about the application itself.
+  app:
+    # -- Application name, mandatory.  Will be used as main container name in Pod
+    name: oidctokenconverter
+    # Default App/JVM resources.
+    # Kubernetes requests/limits will be calculated based on provided numbers
+    resources:
+      # Container memory resources
+      memory:
+        # -- (int) Amount of container memory resource to request (in Mi unit).
+        # This results in a Kubernetes memory resource request on the Pod defintion.
+        ram: 512
+
+  # Kubernetes Service
+  service:
+    # -- name of the Kubernetes Service.  If not specified, this chart will generate a name by convention
+    nameOverride: token-converter

@@ -1,0 +1,147 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backbase-app.fullname" . }}
+  labels:
+{{ include "backbase-app.labels" . | indent 4 }}
+spec:
+  replicas: {{ template "backbase-app.replica-count" . }}
+  {{- $strategy := include "backbase-app.strategy" . -}}
+  {{- if $strategy }}
+  strategy:
+    {{- $strategy | nindent 4 -}}
+  {{- end }}
+  selector:
+    matchLabels:
+{{ include "backbase-app.match-labels" . | indent 6 }}
+  template:
+    metadata:
+      labels:
+{{ include "backbase-app.match-labels" . | indent 8 }}
+{{ include "backbase-app.pod-extra-labels" . | indent 8 }}
+{{- if or .Values.global.podExtraAnnotations .Values.podExtraAnnotations }}
+      annotations:
+{{ include "backbase-app.pod-extra-annotations" . | indent 8 }}
+{{- end }}
+    spec:
+    {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 -}}
+    {{- end -}}
+      {{- if or .Values.global.volumes .Values.volumes .Values.customFiles .Values.persistence.enabled }}
+      volumes:
+      {{- if .Values.global.volumes }}
+        {{- tpl (toYaml .Values.global.volumes) . | nindent 8 }}
+      {{- end -}}
+      {{- if .Values.volumes }}
+        {{- tpl (toYaml .Values.volumes) . | nindent 8 }}
+      {{- end -}}
+      {{- if .Values.customFiles }}
+        - name: customfiles
+          configMap:
+            name: {{ template "backbase-app.fullname" . }}-customfiles
+      {{- end -}}
+      {{- if .Values.persistence.enabled }}
+        - name: {{ template "backbase-app.fullname" . }}-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (printf "%s-%s" (include "backbase-app.fullname" .) "data") }}
+      {{- end -}}
+      {{- end -}}
+      {{- include "backbase-app.init-containers" . | nindent 6 }}
+      serviceAccountName: {{ template "backbase-app.serviceAccountName" . }}
+      {{- $priorityClassName := include "backbase-app.priority-class-name" . -}}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName }}
+      {{- end }}
+      containers:
+        - name: main
+          image: {{ include "backbase-app.image-ref" . }}
+          imagePullPolicy: {{ include "backbase-app.image-pullpolicy" . }}
+          {{- if or .Values.global.volumeMounts .Values.volumeMounts .Values.customFiles .Values.persistence.enabled }}
+          volumeMounts:
+          {{- if .Values.global.volumeMounts }}
+            {{- tpl (toYaml .Values.global.volumeMounts) . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.volumeMounts }}
+            {{- tpl (toYaml .Values.volumeMounts) . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.customFiles }}
+          {{- range $key, $val := .Values.customFiles }}
+            - name: customfiles
+              mountPath: {{ $.Values.customFilesPath }}{{ $key }}
+              subPath: {{ $key }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.persistence.enabled }}
+            - name: {{ template "backbase-app.fullname" . }}-data
+              mountPath: {{ .Values.persistence.mountPath }}
+              {{- if .Values.persistence.mountSubPath }}
+              subPath: {{ .Values.persistence.mountSubPath }}
+              {{- end }}
+          {{- end }}
+          {{- end }}
+          ports:
+          {{- range .Values.app.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .port }}
+              protocol: {{ .protocol | default "TCP" }}
+          {{- end }}
+          env:
+          {{- include "backbase-app.java-opts" . | nindent 12 }}
+          {{- include "backbase-app.registry.env-vars" . | nindent 12 }}
+          {{- include "backbase-app.jwt.env-vars" . | nindent 12 }}
+          {{- include "backbase-app.activemq.env-vars" . | nindent 12 }}
+          {{- include "backbase-app.database.env-vars" . | nindent 12 }}
+          {{- include "backbase-app.env-vars" . | nindent 12 }}
+          {{- include "backbase-app.liveness-probe" . | nindent 10 -}}
+          {{- include "backbase-app.readiness-probe" . | nindent 10 }}
+          resources:
+            {{- include "backbase-app.kubernetes-resources" .Values.app.resources | nindent 12 }}
+        {{- range .Values.additionalContainers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+          {{- with .args }}
+          args:
+          {{- range . }}
+            - {{ . | quote }}
+          {{- end }}
+          {{- end }}
+          {{- if $.Values.customFiles }}
+          volumeMounts:
+          {{- $customFilesPath := .customFilesPath | default $.Values.customFilesPath -}}
+          {{- range $key, $val := $.Values.customFiles }}
+            - name: customfiles
+              mountPath: {{ $customFilesPath }}{{ $key }}
+              subPath: {{ $key }}
+          {{- end }}
+          {{- end }}
+          {{- if .ports }}
+          ports:
+          {{- range .ports }}
+            - name: {{ .name }}
+              containerPort: {{ .port }}
+              protocol: {{ .protocol | default "TCP" }}
+          {{- end }}
+          {{- end }}
+          env:
+          {{- if .jwt }}
+          {{- include "backbase-app.jwt.env-vars" $ | nindent 12 }}
+          {{- end }}
+          {{- include "backbase-app.env-vars-additional-containers" .env | nindent 12 }}
+          {{- include "backbase-app.liveness-probe-generic" .livenessProbe | nindent 10 -}}
+          {{- include "backbase-app.readiness-probe-generic" .readinessProbe | nindent 10 }}
+          resources:
+            {{- include "backbase-app.kubernetes-resources" .resources | nindent 12 }}
+        {{- end }}
+      {{- if or .Values.global.nodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- include "backbase-app.nodeselector" . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

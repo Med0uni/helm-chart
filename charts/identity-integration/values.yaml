@@ -1,0 +1,70 @@
+# Global values: Local values have precedence and mergeOverwrite globals
+global:
+  # -- Configures metadata and image of the app to be deployed
+  app:
+    # -- Configures additional `app.backbase.com/key: value` labels for deployments
+    metadata:
+      # -- The product the app belongs to
+      tier: identity
+    # -- Configures the docker image to use
+    image:
+      # -- The docker registry for this app
+      registry: ""
+      # -- The docker image tag for this app
+      tag: ""
+      # -- Name of the Docker image repository
+      repository: identity-integration-service
+
+  # -- JMS/ActiveMQ settings
+  activemq:
+    # -- If enabled, will set automatically the following environment variables: SPRING_ACTIVEMQ_BROKER_URL, SPRING_ACTIVEMQ_USER, SPRING_ACTIVEMQ_PASSWORD
+    enabled: true
+    # -- If true, will create an initContainer which waits for ActiveMQ to be ready
+    checkEnabled: true
+
+  # -- Kubernetes service
+  service:
+    # -- If enabled, will create a Kubernetes service resource for this deployment
+    enabled: true
+
+  # -- Sets the JWT-related environment variables in the pod
+  jwt:
+    # -- If true, will configure the environment variables related with the JWT token secrets
+    enabled: true
+    # -- Name of external Kubernetes secret containing JWT values
+    existingSecret: "backbase-env-jwt"
+    # -- Will set the variable SIG_SECRET_KEY with the value from the secret `jwt-internal-secretkey`
+    SIG_SECRET_KEY_fromSecret: true
+    # -- Will set the variable USERCTX_KEY with the value from the `userctx-key`
+    USERCTX_KEY_fromSecret: true
+
+# -- Kubernetes service
+identityintegrationservice:
+  # -- If enabled, will create a Kubernetes service for this deployment
+  enabled: true
+  # -- Application configuration settings
+  app:
+    # -- Name of the application
+    name: identityintegrationservice
+    # -- Resource configuration settings
+    resources:
+      # -- Memory configuration
+      memory:
+        # -- The amount of RAM allocated to the application
+        ram: 512
+  # -- Environment variables
+  env:
+    # -- URL for the Backbase Identity auth server
+    IDENTITY_SERVERURL: "http://identity-backbaseidentity:8080/auth"
+
+  # -- Database configuration
+  database:
+    # -- If enabled, will set the necessary database environment variables
+    enabled: false
+    # -- If enabled, initContainer with database check will be added to pod
+    checkEnabled: false
+
+  # -- Service settings
+  service:
+    # -- Name of the service. If not specified, this chart will generate a name by convention
+    nameOverride: identity-integration-service

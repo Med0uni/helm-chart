@@ -1,0 +1,11 @@
+apiVersion: v1
+description: A Common Helm Chart for Backbase Java Applications
+icon: https://start.backbase.com/favicon.png
+keywords:
+- backbase
+- java
+maintainers:
+- email: baas@backbase.com
+  name: BaaS Team
+name: backbase-app
+version: 0.13.0

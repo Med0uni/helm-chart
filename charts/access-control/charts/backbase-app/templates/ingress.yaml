@@ -1,0 +1,40 @@
+{{- if .Values.ingress.enabled -}}
+{{- $baseDomain := .Values.global.ingress.baseDomain -}}
+{{- $gIngressAnnotations := mergeOverwrite (dict) .Values.global.ingress.annotations -}}
+{{- $lIngressAnnotations := mergeOverwrite (dict) .Values.ingress.annotations -}}
+{{- $ingressAnnotations := mergeOverwrite (dict) $gIngressAnnotations $lIngressAnnotations -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
+apiVersion: networking.k8s.io/v1beta1
+{{ else }}
+apiVersion: extensions/v1beta1
+{{ end -}}
+kind: Ingress
+metadata:
+  name: {{ include "backbase-app.fullname" . }}
+  labels:
+{{ include "backbase-app.labels" . | indent 4 }}
+  {{- with $ingressAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if .Values.ingress.tls }}
+  tls:
+{{- toYaml .Values.ingress.tls | nindent 4 -}}
+{{- end }}
+  rules:
+  {{ range .Values.ingress.hosts }}
+    - host: {{ printf "%s.%s" ( required "Ingress: host field required" .host ) $baseDomain | trimSuffix "." }}
+      http:
+        paths:
+        {{- if .customPaths }}
+        {{- toYaml .customPaths | nindent 10 }}
+        {{- end }}
+        {{- range .paths }}
+          - backend:
+              serviceName: {{ include "backbase-app.service-name" $ }}
+              servicePort: http
+            path: {{ . }}
+        {{- end }}
+  {{- end }}
+{{- end }}

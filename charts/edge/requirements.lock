@@ -1,0 +1,6 @@
+dependencies:
+- name: backbase-app
+  repository: https://repo.backbase.com/backbase-charts
+  version: 0.23.8
+digest: sha256:1b9cbe03ba16264c900784f66c75ab2964c599cfb4427fd81cdab48400cda535
+generated: "2022-03-02T16:55:01.148962605Z"

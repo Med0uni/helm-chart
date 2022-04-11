@@ -1,0 +1,76 @@
+# Global values. Local values have precedence and mergeOverwrite globals
+global:
+  # Reference to umbrella chart name
+  chartName: edge
+  # Used to specify data about application itself
+  app:
+    # key-value pairs used for additional "app.backbase.com/key: value" labels for deployments
+    metadata:
+      # Legacy packaged name of the service
+      tier: ips
+      # Capability name
+      capability: edge
+    # Docker image reference for application container; of form `registry/repository:tag`
+    # ref: https://microsoft.github.io/AzureTipsAndTricks/blog/tip57.html#docker-registry-vs-docker-repository
+    image:
+      # Docker image registry
+      registry: ""
+      # Docker image repository
+      repository: edge
+      # Docker image tag
+      tag: ""
+  # Key-value pairs representing environment variables for application container
+  # ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  # it is possible to use templates as value here (will be evaluated using tpl function)
+  env:
+    # Disable Eureka Discovery Client
+    "EUREKA_CLIENT_ENABLED": "false"
+    # Enable Kubernetes Discovery Client
+    "SPRING_CLOUD_KUBERNETES_ENABLED": "true"
+    # Set load balancer server list with ip of pod or service name. default value is POD
+    "SPRING_CLOUD_KUBERNETES_LOADBALANCER_MODE": "SERVICE"
+    # SpEL expression that will evaluate whether to include a service in gateway integration or not
+    # Defaults to metadata.get('public') which only works with Eureka setup
+    "spring.cloud.gateway.discovery.locator.include-expression": "true"
+    # Only the services matching these labels will be fetched from the Kubernetes API server
+    # "app.backbase.com/public:true" is set by services which need to be public.
+    "SPRING_APPLICATION_JSON": "{ \"spring.cloud.kubernetes.discovery.service-labels.[app.backbase.com/public]\": \"true\" }"
+# Edge service local values
+edge:
+  # Used to specify data about application itself
+  app:
+    # Application name, will be used as main container name in Pod
+    name: edge
+    # Default App/JVM resources.
+    # Kubernetes requests/limits will be calculated based on provided numbers
+    resources:
+      # Container memory resources
+      memory:
+        # Amount of container memory resource to request (in Mi unit)
+        ram: 1024
+        # Extra memory reserved for container use (in Mi unit)
+        containerReserve: 128
+      # Container CPU resources
+      cpu:
+        # Amount of shares of a CPU unit to request (where 1000=1 CPU)
+        minShares: 200
+        # Amount of shares of a CPU unit to limit to (where 1000=1 CPU)
+        maxShares: 1000
+  # Kubernetes liveness Probe
+  livenessProbe:
+    # Enables the Kubernetes liveness Probe for the main container
+    enabled: true
+  # Kubernetes readiness Probe
+  readinessProbe:
+    # Enables the Kubernetes readiness Probe for the main container
+    enabled: true
+  # Kubernetes Ingress configuration
+  ingress:
+    # Enables kubernetes Ingress resource for this deployment. Set other sub properties before deploying
+    enabled: true
+  # Kubernetes Service
+  service:
+    # Create a Kubernetes Service resource for this deployment
+    enabled: true
+    # Name of the Kubernetes Service.  If not specified, this chart will generate a name by convention
+    nameOverride: edge

@@ -1,0 +1,629 @@
+# Default values for backbase-app.
+# This is a YAML-formatted file.
+
+## Global values
+## Some of global values have local counterparts
+## Local values have precedence and mergeOverwrite globals
+##
+global:
+  ## Reference to umbrella chart name
+  ##
+  chartName: ""
+
+  ## Number of replicas for Deployment
+  ## If strategy is not set and replicas equals to 1 - will set this update strategy:
+  ## strategy:
+  ##    type: RollingUpdate
+  ##    rollingUpdate:
+  ##      maxUnavailable: 0
+  ##
+  replicaCount: 1
+
+  ## Kubernetes Deployment Strategy
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+  strategy: {}
+
+  ## used to specify data about application itself
+  ## mandatory to set relevant local app.name value
+  ##
+  app:
+    ## key-value pairs used for additional "app.backbase.com/key: value" labels for deployments
+    ##
+    metadata: {}
+    # tier: dbs
+    # capability: access-control
+
+    ## Docker image reference for application container
+    ## registry/repository:tag
+    ##
+    image:
+      ## Docker registry (optional) and repository (mandatory) names
+      ## ref: https://microsoft.github.io/AzureTipsAndTricks/blog/tip57.html#docker-registry-vs-docker-repository
+      ## registry and repository will be concatenated using / if registry is provided, otherwise repository will be used
+      ##
+      registry: ""
+      repository: ""
+      ## Docker image tag
+      ##
+      tag: ""
+      ## Pull policy for docker image
+      ## ref: https://kubernetes.io/docs/concepts/containers/images/#updating-images
+      ##
+      pullPolicy: IfNotPresent
+
+  ## Kubernetes PriorityClass name
+  ## ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#pod-priority
+  priorityClassName: ""
+
+  ## Image
+  ## ref: https://kubernetes.io/docs/concepts/containers/images/#referring-to-an-imagepullsecrets-on-a-pod
+  ##
+  imagePullSecrets: []
+
+  ## Key-value pairs representing environment variables for application container
+  ## ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  ## it is possible to use templates as value here (will be evaluated using tpl function)
+  ##
+  env: {}
+  # BACKBASE_HOME: "/opt/backbase"
+  # RELEASE_NAME: '{{ .Release.Name }}'
+  # POD_IP:
+  #   valueFrom:
+  #     fieldRef:
+  #       fieldPath: status.podIP
+
+  ## Key-value pairs of additional POD labels
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  ## it is possible to use templates here (will be evaluated using tpl function)
+  ##
+  podExtraLabels: {}
+
+  ## Key-value pairs of additional POD annotations
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  ## it is possible to use templates here (will be evaluated using tpl function)
+  ##
+  podExtraAnnotations: {}
+
+  ## Lists of strings to construct JAVA_OPTS environment variable
+  ##
+  javaOpts:
+    ## The environment variable that will be used to expose the java opts.
+    envVarName: JAVA_TOOL_OPTIONS
+    ## Default options
+    ## Avoid altering, use extra list to add customization
+    ## Max ram percentage is supported for the latest JDK's and JRE's.
+    base:
+    - "-XX:MaxRAMPercentage=99.0"
+    - "-XX:+UseContainerSupport"
+    - "-Dlogging.level.root=WARN"
+    - "-Dlogging.level.com.backbase=WARN"
+    ## Extra options
+    ## This list will be appended to base
+    extra: []
+
+  ## JWT related environment variables for POD
+  ##
+  jwt:
+    ## disabled by default
+    ##
+    enabled: false
+    ## name of external kubernetes secret with JWT values
+    ## should contain followind data fields:
+    ##  jwt-internal-secretkey
+    ##  jwt-external-secretkey
+    ##  jwt-external-enc-secretkey
+    ##  userctx-key
+    ##
+    existingSecret: ""
+    ## SIG_SECRET_KEY / EXTERNAL_SIG_SECRET_KEY / EXTERNAL_ENC_SECRET_KEY / USERCTX_KEY environment variables
+    ## if *_fromSecret equals true - data field from existingSecret will be used as value
+    ## otherwise *_value will be used
+    ##
+    SIG_SECRET_KEY_value: ""
+    SIG_SECRET_KEY_fromSecret: false
+    EXTERNAL_SIG_SECRET_KEY_value: ""
+    EXTERNAL_SIG_SECRET_KEY_fromSecret: false
+    EXTERNAL_ENC_SECRET_KEY_value: ""
+    EXTERNAL_ENC_SECRET_KEY_fromSecret: false
+    USERCTX_KEY_value: ""
+    USERCTX_KEY_fromSecret: false
+
+  ## Registry (Netflix Eureka) stuff
+  ##
+  registry:
+    ## If enabled - registry.envVarNameDefaultZone environment variable will be set for POD based on protocol/host/port/path values:
+    ## protocol://host:port/path
+    ## disabled by default
+    ##
+    enabled: false
+    ## Will set eureka.instance.preferIpAddress environment variable to true
+    ## ref: https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-eureka-server.html#spring-cloud-eureka-server-prefer-ip-address
+    ##
+    preferIpAddress: true
+    ## This name will be used in the environment variable to publish the prefer ip address.
+    envVarNamePreferIpAddress: EUREKA_INSTANCE_PREFERIPADDRESS
+    ## This name will be used to publish the environment variable for the default zone.
+    envVarNameDefaultZone: eureka.client.serviceUrl.defaultZone
+    ## protocol - http or https
+    ##
+    protocol: http
+    ## registry host
+    ##
+    host: registry
+    ## registry port
+    ##
+    port: 8080
+    ## registry base path
+    ##
+    path: /eureka/
+    ## if enabled - initContainer with registry check will be added to POD
+    ##
+    checkEnabled: false
+    ## Type of check - curl / netcat / nslookup
+    ##
+    checkType: curl
+
+  ## JMS/ActiveMQ stuff
+  activemq:
+    ## If enabled - will set corresponding JMS/ActiveMQ environment variables:
+    ## SPRING_ACTIVEMQ_BROKER_URL
+    ## SPRING_ACTIVEMQ_USER
+    ## SPRING_ACTIVEMQ_PASSWORD
+    ##
+    ## disabled by default
+    ##
+    enabled: false
+    ## ActiveMQ username
+    ##
+    username: "admin"
+    ## ActiveMQ password
+    ## Will be used if existingSecret not specified
+    ##
+    password: "CHANGEME"
+    ## Name of external kubernetes secret with activemq values
+    ##
+    existingSecret: ""
+    ## data key in existing kubernetes secret to reference as SPRING_ACTIVEMQ_PASSWORD value
+    ##
+    existingSecretKey: "ACTIVEMQ_PASSWORD"
+    ## ActiveMQ host
+    ##
+    host: activemq
+    ## Custom URL template
+    ## Template must reference values in .activemq scope:
+    ## tcp://{{.activemq.host}}:{{.activemq.port}}
+    ##
+    urlTemplate: ""
+    ## ActiveMQ JMS port
+    ##
+    port: 61616
+    ## if enabled - initContainer with activemq check will be added to POD
+    ## disabled by default
+    ##
+    checkEnabled: false
+    ## Type of check - curl / netcat / nslookup
+    ##
+    checkType: netcat
+
+  ## Use this to map default JMS/ActiveMQ environment variable names to custom ones
+  ## For example this will set MY_BROKER_URL instead of SPRING_ACTIVEMQ_BROKER_URL:
+  ## activemqEnvVarsMap:
+  ##  URL: "MY_BROKER_URL"
+  ##
+  activemqEnvVarsMap:
+    URL: "SPRING_ACTIVEMQ_BROKER_URL"
+    USERNAME: "SPRING_ACTIVEMQ_USER"
+    PASSWORD: "SPRING_ACTIVEMQ_PASSWORD"
+
+  ## Database stuff
+  ##
+  database:
+    ## If enabled - will set corresponding database environment variables:
+    ## SPRING_DATASOURCE_URL
+    ## SPRING_DATASOURCE_USERNAME
+    ## SPRING_DATASOURCE_PASSWORD
+    ## SPRING_DATASOURCE_DRIVER_CLASS_NAME
+    ##
+    ## disabled by default
+    ##
+    enabled: false
+    ## Database username
+    ##
+    username: backbase
+    ## Database password
+    ## Will be used if existingSecret not specified
+    ##
+    password: "CHANGEME"
+    ## Name of external kubernetes secret with database values
+    ##
+    existingSecret: ""
+    ## data key in existing kubernetes secret to reference as SPRING_DATASOURCE_PASSWORD value
+    ##
+    existingSecretKey: "mysql-password"
+    ## Database type
+    ## Supported values: mysql / mariadb / oracle / mssql
+    ##
+    type: mysql
+    ## Database host
+    ##
+    host: mysql
+    ## Database port
+    ##
+    port: 3306
+    ## Database name/sid
+    ##
+    sid: ""
+    ## Custom Database URL template
+    ## Template must reference values in .database scope:
+    ## db://{{.database.host}}:{{.database.port}}/{{.database.sid}}?useSSL=true
+    ##
+    urlTemplate: ""
+    ## if enabled - initContainer with database check will be added to POD
+    ## disabled by default
+    ##
+    checkEnabled: false
+    ## Type of check - curl / netcat / nslookup
+    ##
+    checkType: netcat
+
+  ## Use this to map default JMS/ActiveMQ environment variable names to custom ones
+  ## For example this will set DB_URL instead of SPRING_DATASOURCE_URL:
+  ## databaseEnvVarsMap:
+  ##  URL: "DB_URL"
+  ##
+  databaseEnvVarsMap:
+    URL: "SPRING_DATASOURCE_URL"
+    USERNAME: "SPRING_DATASOURCE_USERNAME"
+    PASSWORD: "SPRING_DATASOURCE_PASSWORD"
+    DRIVER_CLASS_NAME: "SPRING_DATASOURCE_DRIVER_CLASS_NAME"
+
+  ## JMX support
+  ##
+  jmx:
+    ## if enabled - will set corresponding properties in JAVA_OPTS
+    ## disabled by default
+    ##
+    enabled: false
+    ## jmx port
+    ##
+    port: 1098
+    ## List of JMX properties to add to JAVA_OPTS
+    ##
+    javaOpts:
+      - "-Dcom.sun.management.jmxremote"
+      - "-Dcom.sun.management.jmxremote.authenticate=false"
+      - "-Dcom.sun.management.jmxremote.ssl=false"
+      - "-Dcom.sun.management.jmxremote.local.only=false"
+      - "-Dcom.sun.management.jmxremote.port={{.Values.global.jmx.port}}"
+      - "-Dcom.sun.management.jmxremote.rmi.port={{.Values.global.jmx.port}}"
+      - "-Djava.rmi.server.hostname=127.0.0.1"
+
+  ## Debug support
+  ##
+  debug:
+    ## if enabled - will set corresponding properties in JAVA_OPTS
+    ## disabled by default
+    ##
+    enabled: false
+    ## debug port
+    ##
+    port: 5005
+    ## List of debug properties to add to JAVA_OPTS
+    javaOpts:
+      - "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address={{.Values.global.debug.port}}"
+
+  ## Kubernetes nodeSelector
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  ##
+  nodeSelector: {}
+
+  ## Global Storage Class
+  ##
+  persistence:
+    storageClass: ""
+
+  ## Kubernetes Service
+  ##
+  service:
+    enabled: false
+    nameOverride: ""
+    type: ClusterIP
+    port: 8080
+    portName: http
+    targetPort: http
+    additionalPorts: []
+#      - name: myPort
+#        port: myPortNumber
+#        targetPort: myTargetPortName
+
+  ## Kubernetes Ingress
+  ##
+  ingress:
+    ## If set FQDN will be costructed like host.baseDomain
+    ##
+    baseDomain: ""
+    ## Global annotations
+    ##
+    annotations: {}
+
+  ## Global initContainers
+  ## Will not be merged with local counterparts
+  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+  initContainers: []
+  #  - name: init-myservice
+  #    image: busybox:1.28
+  #    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+
+  ## Global volumes and volumeMOunts
+  ## Will not be merged with local counterparts
+  ##
+  volumes: []
+  volumeMounts: []
+
+  ## Kubernetes Liveness Probe
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+  ##
+  livenessProbe:
+    enabled: false
+    path: /actuator/health/liveness
+    port: http
+    scheme: HTTP
+    initialDelaySeconds: 90
+    failureThreshold: 3
+    periodSeconds: 15
+    timeoutSeconds: 5
+
+  ## Kubernetes Readiness Probe
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+  ##
+  readinessProbe:
+    enabled: false
+    path: /actuator/health/readiness
+    port: http
+    scheme: HTTP
+    initialDelaySeconds: 90
+    failureThreshold: 3
+    periodSeconds: 15
+    timeoutSeconds: 5
+
+  ## Service Account creation
+  ##
+  serviceAccount:
+    ## Specifies whether a ServiceAccount should be created
+    ##
+    create: false
+    ## The name of the ServiceAccount to use.
+    ## If not set and create is true, a name is generated using the fullname template
+    ## If not set and create is false (but rbac creation is enabled) "default" will be used
+    name: ""
+
+  ## Role Based Access Control
+  ##
+  rbac:
+    ## Specifies whether RBAC resources should be created
+    ##
+    create: false
+
+    role:
+      ## Rules to create. It follows the role specification
+      rules:
+        - apiGroups:
+            - ""
+          resources:
+            - "configmaps"
+            - "pods"
+            - "services"
+            - "endpoints"
+          verbs:
+            - "get"
+            - "list"
+            - "watch"
+
+## Local values
+## mergeOverwites global counterparts
+## Check global section for reference
+
+## Number of replicas for Deployment
+## If strategy is not set and replicas equals to 1 - will set this update strategy:
+## strategy:
+##    type: RollingUpdate
+##    rollingUpdate:
+##      maxUnavailable: 0
+##
+replicaCount: 1
+
+## Kubernetes Deployment Strategy
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+strategy: {}
+
+app:
+  ## Application name, mandatory
+  ## Will be used as main container name in POD
+  ##
+  name: backbase-application
+  metadata: {}
+  image:
+      ## Reference to key name in .global scope (.Values.global.keyname)
+      ## Key value will be used as Docker image tag
+      ## Must be string, no nesting
+      ## When specified - image.tag value will be ignored
+      ##
+      tagFrom: ""
+
+  ports:
+    - name: http
+      port: 8080
+
+  ## Default App/JVM resources
+  ## Kubernetes requests/limits will be calculated bases on provided numbers
+  ## All values must be ints
+  ## Memory values must be in MB units
+  ##
+  resources:
+    memory:
+      ram: 512
+      # Extra memory reserved for container use.
+      containerReserve: 25
+    cpu:
+      minShares: 100
+      maxShares: 1000
+
+## Additional containers
+additionalContainers: {}
+## This is useful when working with proxies.
+# additionalContainers:
+#   container-name:
+#     name: container-name
+#     image: registry/image:tag
+#     env: {}
+#     ports: []
+#     resources: {}
+#     readinessProbe: {}
+#     customFilesPath: /customfiles/
+
+env: {}
+
+podExtraLabels: {}
+podExtraAnnotations: {}
+
+priorityClassName: ""
+
+javaOpts:
+  extra: []
+
+jwt: {}
+
+registry: {}
+
+activemq: {}
+activemqEnvVarsMap: {}
+
+database: {}
+databaseEnvVarsMap: {}
+
+jmx: {}
+
+debug: {}
+
+## Kubernetes Liveness Probe
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+##
+livenessProbe: {}
+
+## Kubernetes Readiness Probe
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+##
+readinessProbe: {}
+
+## Kubernetes Service
+##
+service: {}
+
+## Kubernetes Ingress
+##
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+  hosts:
+    ## If global.ingress.baseDomain is set - host field represent host part of FQDN
+    ##
+    - host: backbase.local
+      paths: []
+      ## Custom paths to prepend to every host configuration.
+      ## This is useful when working with annotation based services.
+      # - path: /*
+      #   backend:
+      #     serviceName: ssl-redirect
+      #     servicePort: use-annotation
+      customPaths: []
+
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+## Custom volumes / volumeMounts
+##
+volumes: []
+volumeMounts: []
+customFiles: {}
+customFilesPath: /customfiles/
+
+## Persistent Storage using PVC
+##
+persistence:
+  enabled: false
+  existingClaim: ""
+  size: 1Gi
+  mountPath: /data
+  mountSubPath: ""
+  accessMode: ReadWriteOnce
+  ## If set to "-", storageClass: "", which disables dynamic provisioning
+  ## If empty or undefined - no storageClass spec is set, choosing the default provisioner
+  ##
+  storageClass: ""
+
+## Additional initContainers
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+initContainers: []
+#  - name: init-myservice
+#    image: busybox:1.28
+#    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+
+## Kubernetes nodeSelector
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+##
+nodeSelector: {}
+
+## Kubernetes Tolerations
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+#  - key: "key"
+#    operator: "Equal"
+#    value: "value"
+#    effect: "NoSchedule"
+
+## Kuberenets Affinity
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+#  podAffinity:
+#    requiredDuringSchedulingIgnoredDuringExecution:
+#    - labelSelector:
+#        matchExpressions:
+#        - key: security
+#          operator: In
+#          values:
+#          - S1
+#      topologyKey: failure-domain.beta.kubernetes.io/zone
+
+## Service Account creation
+##
+serviceAccount:
+  ## Specifies whether a ServiceAccount should be created
+  ##
+  create: # true or false
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the fullname template
+  ## If not set and create is false (but rbac creation is enabled) "default" will be used
+  name: ""
+
+## Role Based Access Control
+##
+rbac:
+  ## Specifies whether RBAC resources should be created
+  ##
+  create: # true or false
+
+  role:
+    ## Rules to create. It follows the role specification
+    # rules:
+    #  - apiGroups:
+    #      - extensions
+    #    resources:
+    #      - podsecuritypolicies
+    #    verbs:
+    #      - use
+    rules: []

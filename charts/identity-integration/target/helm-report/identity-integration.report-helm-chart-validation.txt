@@ -1,0 +1,25 @@
+[WARN] [identity-integration/values.yaml] No value specified for 'identityintegrationservice.app.resources.memory.containerReserve'.  Sensible CPU and memory values that match resource requirements of your service should be specified.  Either:  
+	- Specify a value for 'identityintegrationservice.app.resources.memory.containerReserve', or 
+	- If you have verified the backbase-app provided defaults are suitable, suppress this message by setting '<configuration><backbaseAppMemoryContainerReserveDefaultsRecommendedForThisService>true' in helm-maven-plugin
+[WARN] [identity-integration/values.yaml] No value specified for 'identityintegrationservice.app.resources.cpu.minShares'.  Sensible CPU and memory values that match resource requirements of your service should be specified.  Either:  
+	- Specify a value for 'identityintegrationservice.app.resources.cpu.minShares', or 
+	- If you have verified the backbase-app provided defaults are suitable, suppress this message by setting '<configuration><backbaseAppCPUMinSharesDefaultsRecommendedForThisService>true' in helm-maven-plugin
+[WARN] [identity-integration/values.yaml] Liveness probe initial delay not specified.  Either: 
+	 - Supply a value as global.livenessProbe.initialDelaySeconds, or
+	 - Check and accept the backbase-app defaults and suppress this message by setting '<configuration><backbaseAppLivenessInitialDelayRecommendedForThisService>true' in helm-maven-plugin
+[WARN] [identity-integration/values.yaml] Liveness probe timeout not specified.  Either: 
+	 - Supply a value as global.livenessProbe.timeoutSeconds, or
+	 - Check and accept the backbase-app defaults and suppress this message by setting '<configuration><backbaseAppLivenessTimeoutRecommendedForThisService>true' in helm-maven-plugin
+[WARN] [identity-integration/values.yaml] Liveness probe period not specified.  Either: 
+	 - Supply a value as global.livenessProbe.periodSeconds, or
+	 - Check and accept the backbase-app defaults and suppress this message by setting '<configuration><backbaseAppLivenessPeriodRecommendedForThisService>true' in helm-maven-plugin
+[WARN] [identity-integration/values.yaml] Readiness probe initial delay not specified.  Either: 
+	 - Supply a value as global.readinessProbe.initialDelaySeconds, or
+	 - Check and accept the backbase-app defaults and suppress this message by setting '<configuration><backbaseAppReadinessInitialDelayRecommendedForThisService>true' in helm-maven-plugin
+[WARN] [identity-integration/values.yaml] Readiness probe timeout not specified.  Either: 
+	 - Supply a value as global.readinessProbe.timeoutSeconds, or
+	 - Check and accept the backbase-app defaults and suppress this message by setting '<configuration><backbaseAppReadinessTimeoutRecommendedForThisService>true' in helm-maven-plugin
+[WARN] [identity-integration/values.yaml] Readiness probe period not specified.  Either: 
+	 - Supply a value as global.readinessProbe.periodSeconds, or
+	 - Check and accept the backbase-app defaults and suppress this message by setting '<configuration><backbaseAppReadinessPeriodRecommendedForThisService>true' in helm-maven-plugin
+[INFO] [identity-integration/values.schema.json] Nice to have: please add a json schema: https://helm.sh/docs/topics/charts/#schema-files

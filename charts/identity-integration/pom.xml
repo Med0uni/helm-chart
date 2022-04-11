@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.backbase.identity</groupId>
+    <artifactId>identity-integration-parent</artifactId>
+    <version>1.5.107-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>identity-integration-chart</artifactId>
+  <packaging>pom</packaging>
+
+  <properties>
+    <helm-maven-plugin-version>0.27</helm-maven-plugin-version>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.backbase.helm</groupId>
+        <artifactId>helm-maven-plugin</artifactId>
+        <version>${helm-maven-plugin-version}</version>
+        <executions>
+          <execution>
+            <id>identity-integration</id>
+            <goals>
+              <goal>validateChart</goal>
+            </goals>
+            <configuration>
+              <helmChartPath>.</helmChartPath>
+              <artefactType>SERVICE_SDK_BASED</artefactType>
+              <failBuildOnError>true</failBuildOnError>
+              <suppressedVariableNamesFromCamelCaseCheck>
+                <param>global.jwt.SIG_SECRET_KEY_fromSecret</param>
+                <param>global.jwt.USERCTX_KEY_fromSecret</param>
+              </suppressedVariableNamesFromCamelCaseCheck>
+              <internalInfoLeakWords>
+                <param>'backbase-env'</param>
+              </internalInfoLeakWords>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

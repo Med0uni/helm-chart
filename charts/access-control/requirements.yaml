@@ -1,0 +1,6 @@
+dependencies:
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.18.2
+    alias: accesscontrol
+    condition: accesscontrol.enabled

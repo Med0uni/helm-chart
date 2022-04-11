@@ -1,0 +1,54 @@
+dependencies:
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: backbaseidentity
+    condition: backbaseidentity.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: oidctokenconverter
+    condition: oidctokenconverter.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: fidoservice
+    condition: fidoservice.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: devicemanagementservice
+    condition: devicemanagementservice.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: identityintegrationservice
+    condition: identityintegrationservice.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: communicationsoutboundintegrationmock
+    condition: communicationsoutboundintegrationmock.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: confirmation
+    condition: confirmation.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: transactionsigningmock
+    condition: transactionsigningmock.enabled
+
+  - name: backbase-app
+    repository: https://repo.backbase.com/backbase-charts
+    version: 0.13.0
+    alias: hardtokenoutboundintegrationmock
+    condition: hardtokenoutboundintegrationmock.enabled
